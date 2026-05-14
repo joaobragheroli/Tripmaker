@@ -1,1 +1,32 @@
+# ================================
+# Variáveis de ambiente
+# ================================
 .env
+*.env
+
+# ================================
+# Dependências (nunca versionar)
+# ================================
+vendor/
+node_modules/
+
+# ================================
+# ZIPs dentro do repo (redundantes)
+# ================================
+*.zip
+
+# ================================
+# Uploads de usuários (fotos reais)
+# ================================
+Minhas_Viagens/uploads/*
+Anuncie_Espaco/7.Imagem_Local/uploads/*
+
+# Mantém as pastas de uploads no repo (necessário para o PHP escrever nelas)
+!Minhas_Viagens/uploads/.gitkeep
+!Anuncie_Espaco/7.Imagem_Local/uploads/.gitkeep
+
+# ================================
+# Arquivos de debug e temp
+# ================================
+Anuncie_Espaco/9.Valor/debug.txt
+*.log

@@ -1,5 +1,6 @@
 <?php
-include "conexao.php";
+// excluir_destino.php — usa conexão unificada (shared/conexao.php)
+require_once __DIR__ . '/../shared/conexao.php';
 
 if (!isset($_GET['id'])) {
     die("ID inválido.");
@@ -7,36 +8,18 @@ if (!isset($_GET['id'])) {
 
 $id = intval($_GET['id']);
 
-// ==========================
-// BUSCA A FOTO PARA REMOVER
-// ==========================
+// Busca foto para remover
+$busca = $pdo->prepare("SELECT imagens FROM pontos_turisticos WHERE id = ?");
+$busca->execute([$id]);
+$foto = $busca->fetchColumn();
 
-$busca = $conn->prepare("SELECT imagens FROM pontos_turisticos WHERE id = ?");
-$busca->bind_param("i", $id);
-$busca->execute();
-$busca->bind_result($foto);
-$busca->fetch();
-$busca->close();
-
-// Remove foto se existir
 if ($foto && file_exists("uploads/" . $foto)) {
     unlink("uploads/" . $foto);
 }
 
-// ==========================
-// DELETA DO BANCO
-// ==========================
+// Deleta do banco
+$delete = $pdo->prepare("DELETE FROM pontos_turisticos WHERE id = ?");
+$delete->execute([$id]);
 
-$delete = $conn->prepare("DELETE FROM pontos_turisticos WHERE id = ?");
-$delete->bind_param("i", $id);
-
-if ($delete->execute()) {
-    header("Location: minhas_viagens.php");
-    exit;
-} else {
-    echo "Erro ao excluir: " . $delete->error;
-}
-
-$delete->close();
-$conn->close();
-?>
+header("Location: minhas_viagens.php");
+exit;

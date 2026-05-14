@@ -17,12 +17,12 @@ app.use(express.static("public"));
 // OpenAI
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Conexão MySQL
+// Conexão MySQL — credenciais via variáveis de ambiente (.env)
 const dbPromise = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "turismo"
+    host:     process.env.DB_HOST     || "localhost",
+    user:     process.env.DB_USER     || "root",
+    password: process.env.DB_PASS     || "",
+    database: process.env.DB_NAME     || "turismo"
 });
 
 // Função para formatar moeda
@@ -61,7 +61,7 @@ const cleanJSON = (str) => {
                 .replace(/\s+/g, ' ')     // Espaços múltiplos para simples
                 .replace(/,\s*]/g, ']')   // Vírgulas extras no final do array
                 .replace(/,\s*}/g, '}')   // Vírgulas extras no final do objeto
-                .replace(/“/g, '"').replace(/”/g, '"'); // Aspas curvas
+                .replace(/"/g, '"').replace(/"/g, '"'); // Aspas curvas
 
             console.log("🔄 Tentativa 1 - Limpeza mínima");
             return JSON.parse(temp);
@@ -430,8 +430,7 @@ app.post("/roteiro", async (req, res) => {
     }
 });
 
-// Rota PDF (mantém igual)
-// Rota para gerar PDF - ADICIONE ESTA ROTA
+// Rota PDF
 app.post("/gerar-pdf", async (req, res) => {
     console.log("📄 Rota /gerar-pdf chamada");
     console.log("📦 Dados recebidos:", req.body);
@@ -443,23 +442,18 @@ app.post("/gerar-pdf", async (req, res) => {
             return res.status(400).json({ erro: "Dados do roteiro inválidos" });
         }
 
-        // Cria o documento PDF
         const doc = new PDFDocument({ margin: 50 });
         
-        // Configura os headers para download
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename="roteiro-viagem-${Date.now()}.pdf"`);
         
-        // Pipe do PDF para a resposta
         doc.pipe(res);
 
-        // Título
         doc.fontSize(20)
            .font('Helvetica-Bold')
            .fillColor('#1e3a8a')
            .text('🗺️ Roteiro de Viagem - TripMaker', { align: 'center' });
         
-        // Informações do roteiro
         doc.moveDown(0.5);
         doc.fontSize(12)
            .font('Helvetica')
@@ -468,7 +462,6 @@ app.post("/gerar-pdf", async (req, res) => {
            .text(`Total do roteiro: ${roteiro.total || 'R$ 0,00'}`)
            .text(`Quantidade de pontos: ${pontos.length}`);
 
-        // Linha separadora
         doc.moveDown(0.5);
         doc.moveTo(50, doc.y)
            .lineTo(550, doc.y)
@@ -478,7 +471,6 @@ app.post("/gerar-pdf", async (req, res) => {
 
         doc.moveDown(1);
 
-        // Cabeçalho da tabela
         doc.font('Helvetica-Bold')
            .fillColor('#ffffff')
            .rect(50, doc.y, 500, 25)
@@ -491,43 +483,29 @@ app.post("/gerar-pdf", async (req, res) => {
 
         doc.moveDown(2);
 
-        // Pontos turísticos
         pontos.forEach((ponto, index) => {
-            // Verifica se precisa de nova página
             if (doc.y > 700) {
                 doc.addPage();
             }
 
-            // Fundo cinza claro para linhas pares
             if (index % 2 === 0) {
                 doc.rect(50, doc.y - 10, 500, 25)
                    .fill('#f8fafc');
             }
 
-            // Número
             doc.font('Helvetica')
                .fillColor('#000000')
                .text((index + 1).toString(), 60, doc.y);
             
-            // Nome
-            const nome = ponto.nome || 'Não informado';
-            doc.text(nome, 80, doc.y, { width: 150 });
-            
-            // Categoria
-            const categoria = ponto.categoria || 'Geral';
-            doc.text(categoria, 250, doc.y, { width: 150 });
-            
-            // Valor
-            const valor = ponto.valor || 'sem custo';
-            doc.text(valor, 450, doc.y, { width: 80 });
+            doc.text(ponto.nome || 'Não informado', 80, doc.y, { width: 150 });
+            doc.text(ponto.categoria || 'Geral', 250, doc.y, { width: 150 });
+            doc.text(ponto.valor || 'sem custo', 450, doc.y, { width: 80 });
 
-            // Descrição
             doc.moveDown(0.3);
-            const descricao = ponto.descricao || 'Descrição não disponível';
             doc.font('Helvetica-Oblique')
                .fontSize(10)
                .fillColor('#4b5563')
-               .text(descricao, 80, doc.y, { width: 420 });
+               .text(ponto.descricao || 'Descrição não disponível', 80, doc.y, { width: 420 });
             
             doc.font('Helvetica')
                .fontSize(12)
@@ -535,7 +513,6 @@ app.post("/gerar-pdf", async (req, res) => {
 
             doc.moveDown(1.2);
 
-            // Linha separadora
             if (index < pontos.length - 1) {
                 doc.moveTo(50, doc.y - 5)
                    .lineTo(550, doc.y - 5)
@@ -546,7 +523,6 @@ app.post("/gerar-pdf", async (req, res) => {
             }
         });
 
-        // Rodapé
         const totalPages = doc.bufferedPageRange().count;
         for (let i = 0; i < totalPages; i++) {
             doc.switchToPage(i);
@@ -561,9 +537,7 @@ app.post("/gerar-pdf", async (req, res) => {
                );
         }
 
-        // Finaliza o PDF
         doc.end();
-
         console.log("✅ PDF gerado com sucesso");
 
     } catch (err) {
@@ -577,6 +551,5 @@ app.post("/gerar-pdf", async (req, res) => {
     }
 });
 
-// FINAL DO ARQUIVO - mantém o app.listen
-app.listen(3000, () => console.log("🚀 Servidor rodando em http://localhost:3000"));
-
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Servidor rodando em http://localhost:${PORT}`));

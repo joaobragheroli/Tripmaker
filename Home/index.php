@@ -22,8 +22,8 @@
                     </div>
                     <div class="paginas">
                         <a href="../Anuncie_Espaco/1.Ambiente/">Anuncie seu Espaço</a>
-                        <a href="../Anuncie_Espaco/1.Ambiente/">Minhas Viagens</a>
-                        <a href="../Anuncie_Espaco/1.Ambiente/">Pagina IA</a>
+                        <a href="../Minhas_Viagens/minhas_viagens.php">Minhas Viagens</a>
+                        <a href="../Pagina-ia/public/index.html">Página IA</a>
                     </div>
 
                     <div class="login_icone">
