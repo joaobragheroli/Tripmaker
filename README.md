@@ -155,7 +155,7 @@ Alguns pontos que podem ser melhorados conforme o projeto cresce:
 |-------------------|-----------------------------------------|
 | Guilherme Cristian | Front-end (Home, Roteiro, Modal)       |
 | Braghe            | Integração com IA                       |
-| João Otávio       | Colaboração geral                       |
+| Braghe            | Colaboração geral                       |
 
 ---
 
